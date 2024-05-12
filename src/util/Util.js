@@ -1,6 +1,5 @@
 'use strict';
 
-const { Agent } = require('node:http');
 const { parse } = require('node:path');
 const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
@@ -605,7 +604,7 @@ class Util extends null {
           return user ? Util._removeMentions(`@${user.username}`) : input;
         }
 
-        const member = channel.guild?.members.cache.get(id);
+        const member = channel.guild.members.cache.get(id);
         if (member) {
           return Util._removeMentions(`@${member.displayName}`);
         } else {
@@ -795,28 +794,6 @@ class Util extends null {
         })
         .catch(reject);
     });
-  }
-
-  /**
-   * Lazily evaluates a callback function (yea it's v14 :yay:)
-   * @param {Function} cb The callback to lazily evaluate
-   * @returns {Function}
-   * @example
-   * const User = lazy(() => require('./User'));
-   * const user = new (User())(client, data);
-   */
-  static lazy(cb) {
-    let defaultValue;
-    return () => (defaultValue ??= cb());
-  }
-
-  /**
-   * Hacking check object instanceof Proxy-agent
-   * @param {Object} object any
-   * @returns {boolean}
-   */
-  static verifyProxyAgent(object) {
-    return typeof object == 'object' && object.httpAgent instanceof Agent && object.httpsAgent instanceof Agent;
   }
 }
 

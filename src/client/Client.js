@@ -231,6 +231,57 @@ class Client extends BaseClient {
   }
 
   /**
+   * Updates the client's build number to the latest one from Discord.
+   * @returns {Promise<void>}
+   */
+  async update_client_build_number() {
+    const build_number = await this.getClientBuildNumber();
+    if (build_number) {
+      this.options.ws.properties.client_build_number = build_number;
+    }
+  }
+
+  /**
+   * Gets the client's build number from Discord.
+   * @returns {Promise<number | null>}
+   */
+  async getClientBuildNumber(type = 'canary') {
+    if (type == 'stable') type = 'www';
+    const BUILD_NUMBER_STRING = 'build_number:"';
+    const doc = await fetch(`https://${type}.discord.com/app`).then(r => r.text());
+    const scripts = doc.match(/\/assets\/[0-9]{1,5}.*?.js/gim);
+    let number = null;
+
+    for (const script of scripts.reverse()) {
+      try {
+        const js = await fetch(`https://${type}.discord.com${script}`, {
+          headers: {
+            Origin: `https://${type}.discord.com`,
+            Referer: `https://${type}.discord.com/app`,
+          },
+        }).then(r => r.text());
+
+        const idx = js.indexOf(BUILD_NUMBER_STRING);
+        if (idx == -1) continue;
+
+        const start = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + 10);
+
+        let end = start.indexOf('"');
+        if (end == -1) end = 10;
+
+        const build = js.slice(idx + BUILD_NUMBER_STRING.length, idx + BUILD_NUMBER_STRING.length + end);
+        number = Number(build);
+
+        break;
+      } catch (e) {
+        break;
+      }
+    }
+
+    return number;
+  }
+
+  /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
    * @returns {Promise<string>} Token of the account used
@@ -558,7 +609,7 @@ class Client extends BaseClient {
   /**
    * Join this Guild / GroupDMChannel using this invite
    * @param {InviteResolvable} invite Invite code or URL
-   * @param {AcceptInviteOptions} [options] Options
+   * @param {AcceptInviteOptions} [options={ bypassOnboarding: true, bypassVerify: true }] Options
    * @returns {Promise<Guild|DMChannel|GroupDMChannel>}
    * @example
    * await client.acceptInvite('https://discord.gg/genshinimpact', { bypassOnboarding: true, bypassVerify: true })

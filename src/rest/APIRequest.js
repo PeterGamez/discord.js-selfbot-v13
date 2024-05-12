@@ -1,6 +1,7 @@
 'use strict';
 
 const Buffer = require('node:buffer').Buffer;
+const http = require('node:http');
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const makeFetchCookie = require('fetch-cookie');
@@ -8,7 +9,6 @@ const FormData = require('form-data');
 const fetchOriginal = require('node-fetch');
 const { CookieJar } = require('tough-cookie');
 const { ciphers } = require('../util/Constants');
-const Util = require('../util/Util');
 
 const cookieJar = new CookieJar();
 const fetch = makeFetchCookie(fetchOriginal, cookieJar);
@@ -40,17 +40,11 @@ class APIRequest {
 
   make(captchaKey, captchaRqToken) {
     if (!agent) {
-      if (Util.verifyProxyAgent(this.client.options.http.agent)) {
-        // Bad code
-        for (const [k, v] of Object.entries({
-          keepAlive: true,
-          honorCipherOrder: true,
-          minVersion: 'TLSv1.2',
-          ciphers: ciphers.join(':'),
-        })) {
-          this.client.options.http.agent.options[k] = v;
-          this.client.options.http.agent.httpsAgent.options.options[k] = v;
-        }
+      if (this.client.options.http.agent instanceof http.Agent) {
+        this.client.options.http.agent.options.keepAlive = true;
+        this.client.options.http.agent.options.honorCipherOrder = true;
+        this.client.options.http.agent.options.minVersion = 'TLSv1.2';
+        this.client.options.http.agent.options.ciphers = ciphers.join(':');
         agent = this.client.options.http.agent;
       } else {
         agent = new https.Agent({

@@ -9,7 +9,7 @@ const { Error, RangeError, TypeError } = require('../errors');
 exports.MaxBulkDeletableMessageAge = 1_209_600_000;
 
 exports.UserAgent =
-  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.250 Chrome/124.0.6367.60 Electron/30.0.1 Safari/537.36';
 
 /**
  * Google Chrome v108 TLS ciphers
@@ -755,11 +755,10 @@ exports.SystemMessageTypes = exports.MessageTypes.filter(
  * * WATCHING
  * * CUSTOM
  * * COMPETING
- * * HANG
  * @typedef {string} ActivityType
  * @see {@link https://discord.com/developers/docs/game-sdk/activities#data-models-activitytype-enum}
  */
-exports.ActivityTypes = createEnum(['PLAYING', 'STREAMING', 'LISTENING', 'WATCHING', 'CUSTOM', 'COMPETING', 'HANG']);
+exports.ActivityTypes = createEnum(['PLAYING', 'STREAMING', 'LISTENING', 'WATCHING', 'CUSTOM', 'COMPETING']);
 
 /**
  * All available channel types:

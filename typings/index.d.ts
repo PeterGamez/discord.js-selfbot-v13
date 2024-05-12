@@ -173,9 +173,25 @@ export interface RichButton {
   url: string;
 }
 
-export class RichPresence extends Activity {
-  public constructor(client: Client, data?: object);
-  public metadata: RichPresenceMetadata;
+export class RichPresence {
+  public constructor(client?: Client, data?: object, IPC?: boolean);
+  public application_id: Snowflake | null;
+  public assets: RichPresenceAssets | null;
+  public buttons: string[];
+  public details: string | null;
+  public name: string;
+  public party: {
+    id: string | null;
+    size: [number, number];
+  } | null;
+  public state: string | null;
+  public timestamps: {
+    start: Date | null;
+    end: Date | null;
+  } | null;
+  public type: ActivityType;
+  public url: string | null;
+  public ipc: boolean;
   public setAssetsLargeImage(image?: string): this;
   public setAssetsLargeText(text?: string): this;
   public setAssetsSmallImage(image?: string): this;
@@ -187,11 +203,10 @@ export class RichPresence extends Activity {
   public setDetails(details?: string): this;
   public setState(state?: string): this;
   public setParty(party?: { max: number; current: number; id?: string }): this;
-  public setStartTimestamp(timestamp: Date | number | null): this;
-  public setEndTimestamp(timestamp: Date | number | null): this;
+  public setStartTimestamp(timestamp?: Date): this;
+  public setEndTimestamp(timestamp?: Date): this;
   public setButtons(...button: RichButton[]): this;
   public addButton(name: string, url: string): this;
-  public setJoinSecret(join?: string): this;
   public static getExternal(
     client: Client,
     applicationId: Snowflake,
@@ -228,39 +243,62 @@ export interface ExternalAssets {
   external_asset_path: string;
 }
 
-export interface RichPresenceMetadata {
-  album_id?: string;
-  artist_ids?: string[];
-  context_uri?: string;
-  button_urls?: string[];
+export interface SpotifyMetadata {
+  album_id: string;
+  artist_ids: string[];
 }
 
 export class SpotifyRPC extends RichPresence {
   public constructor(client: Client, data?: object);
+  public application_id: Snowflake | null;
+  public client: Client;
+  public assets: RichPresenceAssets | null;
+  public buttons: string[];
+  public details: string | null;
+  public name: string;
+  public sync_id: string;
+  public id: string;
+  public flags: number;
+  public party: {
+    id: string | null;
+    size: [number, number];
+  } | null;
+  public state: string | null;
+  public timestamps: {
+    start: Date | null;
+    end: Date | null;
+  } | null;
+  public type: ActivityType;
+  public url: string | null;
+  public metadata: SpotifyMetadata;
+  public setAssetsLargeImage(image?: string): this;
+  public setAssetsSmallImage(image?: string): this;
   public setSongId(id: string): this;
   public addArtistId(id: string): this;
   public setArtistIds(...ids: string[]): this;
   public setAlbumId(id: string): this;
 }
 
-export class CustomStatus extends Activity {
-  public constructor(client: Client, data?: object);
+export class CustomStatus {
+  public constructor(data?: object);
+  public emoji: EmojiIdentifierResolvable;
+  public state: string;
   public setEmoji(emoji?: EmojiIdentifierResolvable): this;
   public setState(state: string): this;
+  public toJSON(): object;
   public toString(): string;
-  public toJSON(): unknown;
 }
 
 export class Activity {
-  public constructor(presence: Presence, data?: RawActivityData);
+  private constructor(presence: Presence, data?: RawActivityData);
   public readonly presence: Presence;
   public applicationId: Snowflake | null;
-  public assets: RichPresenceAssets;
+  public assets: RichPresenceAssets | null;
   public buttons: string[];
   public readonly createdAt: Date;
   public createdTimestamp: number;
   public details: string | null;
-  public emoji: EmojiIdentifierResolvable | null;
+  public emoji: Emoji | null;
   public flags: Readonly<ActivityFlags>;
   public id: string;
   public name: string;
@@ -273,8 +311,8 @@ export class Activity {
   public state: string | null;
   public syncId: string | null;
   public timestamps: {
-    start: number | null;
-    end: number | null;
+    start: Date | null;
+    end: Date | null;
   } | null;
   public type: ActivityType;
   public url: string | null;
@@ -770,7 +808,8 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
   public sleep(timeout: number): Promise<void>;
   public login(token?: string): Promise<string>;
-  public passLogin(email: string, password: string, code?: string | number): Promise<string | null>;
+  public update_client_build_number(): Promise<void>;
+  public getClientBuildNumber(): Promise<number>;
   public QRLogin(): Promise<void>;
   public logout(): Promise<void>;
   public isReady(): this is Client<true>;
@@ -2444,12 +2483,6 @@ export class RichPresenceAssets {
   public smallText: string | null;
   public largeImageURL(options?: StaticImageURLOptions): string | null;
   public smallImageURL(options?: StaticImageURLOptions): string | null;
-  public static parseImage(image: string): string | null;
-  public toJSON(): unknown;
-  public setLargeImage(image?: string): this;
-  public setLargeText(text?: string): this;
-  public setSmallImage(image?: string): this;
-  public setSmallText(text?: string): this;
 }
 
 export class Role extends Base {

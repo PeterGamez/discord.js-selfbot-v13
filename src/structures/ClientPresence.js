@@ -22,7 +22,7 @@ class ClientPresence extends Presence {
    */
   set(presence) {
     const packet = this._parse(presence);
-    this._patch(packet);
+    this._patch(packet, true);
     if (typeof presence.shardId === 'undefined') {
       this.client.ws.broadcast({ op: Opcodes.STATUS_UPDATE, d: packet });
     } else if (Array.isArray(presence.shardId)) {
@@ -45,7 +45,7 @@ class ClientPresence extends Presence {
     const data = {
       activities: [],
       afk: typeof afk === 'boolean' ? afk : false,
-      since: typeof since === 'number' && !Number.isNaN(since) ? since : 0,
+      since: typeof since === 'number' && !Number.isNaN(since) ? since : null,
       status: status ?? this.status,
     };
     if (activities?.length) {
